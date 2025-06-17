@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Assinaturas de Email</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .signature-preview {
+            font-family: Arial, sans-serif;
+        }
+        .signature-preview table {
+            border-collapse: collapse;
+        }
+        .signature-preview img {
+            max-width: 100%;
+            height: auto;
+        }
+        .fade-enter-active, .fade-leave-active {
+            transition: opacity 0.3s ease;
+        }
+        .fade-enter-from, .fade-leave-to {
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="min-h-screen bg-gray-50 py-8">
+            <div class="max-w-6xl mx-auto px-4">
+                <header class="text-center mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                        Gerador de Assinaturas de Email
+                    </h1>
+                    <p class="text-gray-600">
+                        Crie sua assinatura profissional personalizada
+                    </p>
+                </header>
+
+                <div class="grid lg:grid-cols-2 gap-8">
+                    <!-- Formulário -->
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h2 class="text-xl font-semibold mb-6 text-gray-800">
+                            Dados Pessoais
+                        </h2>
+                        
+                        <form @submit.prevent class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Empresa
+                                </label>
+                                <select 
+                                    v-model="selectedCompany" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <option value="">Selecione uma empresa</option>
+                                    <option 
+                                        v-for="company in companies" 
+                                        :key="company.id" 
+                                        :value="company.id"
+                                    >
+                                        {{ company.name }}
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Nome Completo
+                                </label>
+                                <input 
+                                    v-model="formData.name"
+                                    type="text" 
+                                    placeholder="Digite seu nome completo"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Cargo
+                                </label>
+                                <input 
+                                    v-model="formData.jobTitle"
+                                    type="text" 
+                                    placeholder="Digite seu cargo"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Email
+                                </label>
+                                <input 
+                                    v-model="formData.email"
+                                    type="email" 
+                                    placeholder="seu.email@empresa.com"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Telefone
+                                </label>
+                                <input 
+                                    v-model="formData.phone"
+                                    type="tel" 
+                                    placeholder="(11) 99999-9999"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+
+                            <div class="pt-4 space-y-3">
+                                <button 
+                                    @click="copySignature"
+                                    :disabled="!isFormValid"
+                                    class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    Copiar Assinatura
+                                </button>
+                                
+                                <button 
+                                    @click="showInstructions = true"
+                                    type="button"
+                                    class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors"
+                                >
+                                    Como Instalar a Assinatura
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Preview -->
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h2 class="text-xl font-semibold mb-6 text-gray-800">
+                            Preview da Assinatura
+                        </h2>
+                        
+                        <div class="border border-gray-200 rounded-md p-4 bg-gray-50 min-h-[200px]">
+                            <div v-if="!selectedCompany" class="text-center text-gray-500 py-8">
+                                Selecione uma empresa para ver o preview
+                            </div>
+                            <div v-else v-html="generatedSignature" class="signature-preview"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal de Instruções -->
+            <div 
+                v-if="showInstructions" 
+                class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+                @click.self="showInstructions = false"
+            >
+                <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+                    <div class="p-6 border-b">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-xl font-semibold">Como Instalar sua Assinatura</h3>
+                            <button 
+                                @click="showInstructions = false"
+                                class="text-gray-400 hover:text-gray-600"
+                            >
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="p-6">
+                        <!-- Abas -->
+                        <div class="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg">
+                            <button
+                                v-for="client in emailClients"
+                                :key="client.id"
+                                @click="activeTab = client.id"
+                                :class="[
+                                    'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors',
+                                    activeTab === client.id 
+                                        ? 'bg-white text-blue-600 shadow-sm' 
+                                        : 'text-gray-600 hover:text-gray-900'
+                                ]"
+                            >
+                                {{ client.name }}
+                            </button>
+                        </div>
+
+                        <!-- Conteúdo das Abas -->
+                        <div class="overflow-y-auto max-h-[60vh]">
+                            <div v-for="client in emailClients" :key="client.id" v-show="activeTab === client.id">
+                                <div class="space-y-4">
+                                    <div v-for="(step, index) in client.steps" :key="index" class="flex gap-4">
+                                        <div class="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-semibold">
+                                            {{ index + 1 }}
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="text-gray-700">{{ step }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+                                        <div class="flex items-start gap-2">
+                                            <svg class="w-5 h-5 text-yellow-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                            </svg>
+                                            <div>
+                                                <p class="font-medium text-yellow-800">Importante:</p>
+                                                <p class="text-yellow-700 text-sm mt-1">
+                                                    Certifique-se de que a opção "Sempre corresponder à fonte da mensagem padrão" esteja desmarcada, 
+                                                    caso contrário sua assinatura aparecerá em texto simples.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-4">
+                                        <img 
+                                            :src="client.instructionImage" 
+                                            :alt="`Instruções para ${client.name}`"
+                                            class="w-full rounded-lg border border-gray-200"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Toast de Sucesso -->
+            <transition name="fade">
+                <div 
+                    v-if="showToast"
+                    class="fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50"
+                >
+                    Assinatura copiada com sucesso!
+                </div>
+            </transition>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, computed, watch } = Vue;
+
+        createApp({
+            setup() {
+                // Estado reativo
+                const selectedCompany = ref('');
+                const formData = ref({
+                    name: '',
+                    jobTitle: '',
+                    email: '',
+                    phone: ''
+                });
+                const showInstructions = ref(false);
+                const activeTab = ref('outlook');
+                const showToast = ref(false);
+
+                // Configuração das empresas
+                const companies = ref([
+                    {
+                        id: 'bloom',
+                        name: 'Bloom',
+                        website: 'http://bloommkt.com.br',
+                        websiteDisplay: 'bloommkt.com.br/',
+                        logo: 'https://xshbdxnraqxtktseclbi.supabase.co/storage/v1/object/public/images//logo-bloom.png',
+                        logoWidth: 150,
+                        logoHeight: 47,
+                        borderColor: 'rgb(51,156,207)',
+                        websiteColor: 'rgb(51,156,207)',
+                        emailIcon: 'https://xshbdxnraqxtktseclbi.supabase.co/storage/v1/object/public/images//email.png',
+                        phoneIcon: 'https://xshbdxnraqxtktseclbi.supabase.co/storage/v1/object/public/images//phone.png',
+                        websiteIcon: 'https://xshbdxnraqxtktseclbi.supabase.co/storage/v1/object/public/images//website.png'
+                    },
+                    {
+                        id: '3gstudio',
+                        name: '3gStudio',
+                        website: 'https://3gstudio.com.br',
+                        websiteDisplay: '3gstudio.com.br',
+                        logo: 'https://xshbdxnraqxtktseclbi.supabase.co/storage/v1/object/public/images//logo-3g.png',
+                        logoWidth: 70,
+                        logoHeight: 69,
+                        borderColor: 'rgb(244,121,32)',
+                        websiteColor: 'rgb(244,121,32)',
+                        emailIcon: 'https://xshbdxnraqxtktseclbi.supabase.co/storage/v1/object/public/images//email_3gstudio.png',
+                        phoneIcon: 'https://xshbdxnraqxtktseclbi.supabase.co/storage/v1/object/public/images//phone_3gstudio.png',
+                        websiteIcon: 'https://xshbdxnraqxtktseclbi.supabase.co/storage/v1/object/public/images//website_3gstudio.png'
+                    }
+                ]);
+
+                // Clientes de email
+                const emailClients = ref([
+                    {
+                        id: 'outlook',
+                        name: 'Outlook',
+                        instructionImage: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/instrucoes-kyQ02zjbVpgQO06lLXTEpX4Um51jMS.png',
+                        steps: [
+                            'Abra o Outlook e vá em Arquivo > Opções',
+                            'Clique em "Email" no menu lateral',
+                            'Clique no botão "Assinaturas..."',
+                            'Clique em "Novo" para criar uma nova assinatura',
+                            'Cole sua assinatura na área de edição',
+                            'Clique em "OK" para salvar'
+                        ]
+                    },
+                    {
+                        id: 'gmail',
+                        name: 'Gmail',
+                        instructionImage: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/instrucoes-kyQ02zjbVpgQO06lLXTEpX4Um51jMS.png',
+                        steps: [
+                            'Abra o Gmail e clique na engrenagem (Configurações)',
+                            'Clique em "Ver todas as configurações"',
+                            'Role para baixo até encontrar "Assinatura"',
+                            'Clique em "Criar nova" se não tiver uma assinatura',
+                            'Cole sua assinatura na área de edição',
+                            'Role para baixo e clique em "Salvar alterações"'
+                        ]
+                    },
+                    {
+                        id: 'apple-mail',
+                        name: 'Apple Mail',
+                        instructionImage: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/instrucoes-kyQ02zjbVpgQO06lLXTEpX4Um51jMS.png',
+                        steps: [
+                            'Abra o aplicativo Mail e clique em Mail > Preferências',
+                            'Clique na aba "Assinaturas"',
+                            'Clique no botão "+" na coluna do meio',
+                            'Cole sua assinatura na área de edição à direita',
+                            'Certifique-se de desmarcar "Sempre corresponder à fonte da mensagem padrão"',
+                            'Feche a janela de preferências para salvar'
+                        ]
+                    },
+                    {
+                        id: 'thunderbird',
+                        name: 'Thunderbird',
+                        instructionImage: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/instrucoes-kyQ02zjbVpgQO06lLXTEpX4Um51jMS.png',
+                        steps: [
+                            'Abra o Thunderbird e vá em Ferramentas > Configurações da conta',
+                            'Selecione sua conta de email na lista à esquerda',
+                            'Role para baixo até encontrar "Texto da assinatura"',
+                            'Marque a opção "Anexar esta assinatura"',
+                            'Cole sua assinatura na área de texto',
+                            'Clique em "OK" para salvar'
+                        ]
+                    },
+                    {
+                        id: 'webmail',
+                        name: 'Webmail Geral',
+                        instructionImage: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/instrucoes-kyQ02zjbVpgQO06lLXTEpX4Um51jMS.png',
+                        steps: [
+                            'Acesse seu webmail e procure por "Configurações" ou "Settings"',
+                            'Procure pela seção "Assinatura" ou "Signature"',
+                            'Cole sua assinatura na área de edição',
+                            'Certifique-se de selecionar "HTML" como formato',
+                            'Salve as configurações',
+                            'Teste enviando um email para verificar se a assinatura aparece corretamente'
+                        ]
+                    }
+                ]);
+
+                // Computed
+                const currentCompany = computed(() => {
+                    return companies.value.find(c => c.id === selectedCompany.value);
+                });
+
+                const isFormValid = computed(() => {
+                    return selectedCompany.value && 
+                           formData.value.name && 
+                           formData.value.jobTitle && 
+                           formData.value.email && 
+                           formData.value.phone;
+                });
+
+                const generatedSignature = computed(() => {
+                    if (!currentCompany.value || !isFormValid.value) return '';
+                    
+                    const company = currentCompany.value;
+                    
+                    return `
+                        <div>
+                            <style>
+                                .sh-src a {
+                                    text-decoration: none !important;
+                                }
+                            </style>
+                        </div>
+                        <br>
+                        <table cellpadding="0" cellspacing="0" border="0" class="sh-src" style="margin: 0px; border-collapse: collapse;">
+                            <tr>
+                                <td style="padding: 0px 1px 0px 0px;">
+                                    <table cellpadding="0" cellspacing="0" border="0" style="border-collapse: collapse; margin: 0px;">
+                                        <tr>
+                                            <td align="center" style="padding: 0px 35px 0px 0px; vertical-align: top;">
+                                                <table cellpadding="0" cellspacing="0" border="0" style="margin: 0px; border-collapse: collapse;">
+                                                    <tr>
+                                                        <td style="padding: 0px 1px 0px 0px;">
+                                                            <p style="margin: 1px;">
+                                                                <a href="${company.website}" target="_blank">
+                                                                    <img src="${company.logo}" alt="" title="Logo" width="${company.logoWidth}" height="${company.logoHeight}" style="display: block; border: 0px; max-width: ${company.logoWidth}px;">
+                                                                </a>
+                                                            </p>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                            <td style="padding: 1px 0px 0px; border-right: 2px solid ${company.borderColor};"></td>
+                                            <td style="padding: 0px 1px 0px 35px; vertical-align: top;">
+                                                <table cellpadding="0" cellspacing="0" border="0" style="margin: 0px; border-collapse: collapse;">
+                                                    <tr>
+                                                        <td style="padding: 0px 1px 20px 0px; font-family: Arial, sans-serif; font-size: 13px; line-height: 17px; white-space: nowrap;">
+                                                            <p style="font-family: Arial, sans-serif; font-size: 13px; line-height: 17px; font-weight: 700; color: rgb(0,0,0); white-space: nowrap; margin: 1px;">
+                                                                ${formData.value.name}
+                                                            </p>
+                                                            <p style="font-family: Arial, sans-serif; font-size: 13px; line-height: 17px; white-space: nowrap; color: rgb(136,136,136); margin: 1px;">
+                                                                ${formData.value.jobTitle}
+                                                            </p>
+                                                            <p style="font-family: Arial, sans-serif; font-size: 13px; line-height: 17px; white-space: nowrap; color: rgb(136,136,136); margin: 1px;">
+                                                                ${company.name}
+                                                            </p>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="padding: 0px 1px 0px 0px;">
+                                                            <table cellpadding="0" cellspacing="0" border="0" style="margin: 0px; border-collapse: collapse;">
+                                                                <tr>
+                                                                    <td valign="middle" style="padding: 1px 5px 1px 0px; vertical-align: middle;">
+                                                                        <p style="margin: 1px;">
+                                                                            <img src="${company.emailIcon}" alt="" width="18" height="18" style="display: block; border: 0px; margin: 0px; width: 18px; height: 18px;">
+                                                                        </p>
+                                                                    </td>
+                                                                    <td style="font-family: Arial, sans-serif; font-size: 13px; line-height: 17px; white-space: nowrap; color: rgb(136,136,135) !important; padding: 1px 0px; vertical-align: middle;">
+                                                                        <p style="margin: 1px;">
+                                                                            <a href="mailto:${formData.value.email}" target="_blank" style="font-family: Arial, sans-serif; font-size: 13px; line-height: 17px; white-space: nowrap; color: rgb(136,136,136); text-decoration: none !important;">
+                                                                                <span style="font-family: Arial, sans-serif; font-size: 13px; line-height: 17px; white-space: nowrap; color: rgb(136,136,136); text-decoration: none !important;">
+                                                                                    ${formData.value.email}
+                                                                                </span>
+                                                                            </a>
+                                                                        </p>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td valign="middle" style="padding: 1px 5px 1px 0px; vertical-align: middle;">
+                                                                        <p style="margin: 1px;">
+                                                                            <img src="${company.phoneIcon}" alt="" width="18" height="18" style="display: block; border: 0px; margin: 0px; width: 18px; height: 18px;">
+                                                                        </p>
+                                                                    </td>
+                                                                    <td style="font-family: Arial, sans-serif; font-size: 13px; line-height: 17px; white-space: nowrap; color: rgb(136,136,135) !important; padding: 1px 0px; vertical-align: middle;">
+                                                                        <p style="margin: 1px;">
+                                                                            <a href="tel:${formData.value.phone}" target="_blank" style="font-family: Arial, sans-serif; font-size: 13px; line-height: 17px; white-space: nowrap; color: rgb(136,136,136); text-decoration: none !important;">
+                                                                                <span style="font-family: Arial, sans-serif; font-size: 13px; line-height: 17px; white-space: nowrap; color: rgb(136,136,136); text-decoration: none !important;">
+                                                                                    ${formData.value.phone}
+                                                                                </span>
+                                                                            </a>
+                                                                        </p>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td valign="middle" style="padding: 1px 5px 1px 0px; vertical-align: middle;">
+                                                                        <p style="margin: 1px;">
+                                                                            <img src="${company.websiteIcon}" alt="" width="18" height="18" style="display: block; border: 0px; margin: 0px; width: 18px; height: 18px;">
+                                                                        </p>
+                                                                    </td>
+                                                                    <td style="font-family: Arial, sans-serif; font-size: 13px; line-height: 17px; white-space: nowrap; color: ${company.websiteColor} !important; font-weight: 700; padding: 1px 0px; vertical-align: middle;">
+                                                                        <p style="margin: 1px;">
+                                                                            <a href="${company.website}" target="_blank" style="font-family: Arial, sans-serif; font-size: 13px; line-height: 17px; white-space: nowrap; color: ${company.websiteColor}; font-weight: 700; text-decoration: none !important;">
+                                                                                <span style="font-family: Arial, sans-serif; font-size: 13px; line-height: 17px; white-space: nowrap; color: ${company.websiteColor}; font-weight: 700; text-decoration: none !important;">
+                                                                                    ${company.websiteDisplay}
+                                                                                </span>
+                                                                            </a>
+                                                                        </p>
+                                                                    </td>
+                                                                </tr>
+                                                            </table>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    `;
+                });
+
+                // Métodos
+                const copySignature = async () => {
+                    if (!isFormValid.value) return;
+                    
+                    try {
+                        await navigator.clipboard.writeText(generatedSignature.value);
+                        showToast.value = true;
+                        setTimeout(() => {
+                            showToast.value = false;
+                        }, 3000);
+                    } catch (err) {
+                        console.error('Erro ao copiar:', err);
+                        // Fallback para navegadores mais antigos
+                        const textArea = document.createElement('textarea');
+                        textArea.value = generatedSignature.value;
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        
+                        showToast.value = true;
+                        setTimeout(() => {
+                            showToast.value = false;
+                        }, 3000);
+                    }
+                };
+
+                // Watchers
+                watch(selectedCompany, (newValue) => {
+                    if (newValue) {
+                        const company = companies.value.find(c => c.id === newValue);
+                        if (company) {
+                            // Pré-preencher o email se estiver vazio
+                            if (!formData.value.email) {
+                                if (company.id === 'bloom') {
+                                    formData.value.email = 'seu.email@bloommkt.com.br';
+                                } else if (company.id === '3gstudio') {
+                                    formData.value.email = 'seu.email@3gstudio.com.br';
+                                }
+                            }
+                        }
+                    }
+                });
+
+                return {
+                    selectedCompany,
+                    formData,
+                    showInstructions,
+                    activeTab,
+                    showToast,
+                    companies,
+                    emailClients,
+                    currentCompany,
+                    isFormValid,
+                    generatedSignature,
+                    copySignature
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
