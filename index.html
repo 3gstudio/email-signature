@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerador de Assinaturas de Email</title>
-    <link rel="icon" type="image/png" href="images/favicon/favicon-96x96.png" sizes="96x96" />
-    <link rel="icon" type="image/svg+xml" href="images/favicon/favicon.svg" />
-    <link rel="shortcut icon" href="images/favicon/favicon.ico" />
-    <link rel="apple-touch-icon" sizes="180x180" href="images/favicon/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" href="https://pub-336d12e9d48c4611a5ffba8c2e1f4bbb.r2.dev/images/images/favicon/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="https://pub-336d12e9d48c4611a5ffba8c2e1f4bbb.r2.dev/images/images/favicon/favicon.svg" />
+    <link rel="shortcut icon" href="https://pub-336d12e9d48c4611a5ffba8c2e1f4bbb.r2.dev/images/images/favicon/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="https://pub-336d12e9d48c4611a5ffba8c2e1f4bbb.r2.dev/images/images/favicon/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-title" content="Gerador de QR Code" />
-    <link rel="manifest" href="images/favicon/site.webmanifest" />
+    <link rel="manifest" href="https://pub-336d12e9d48c4611a5ffba8c2e1f4bbb.r2.dev/images/images/favicon/site.webmanifest" />
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -29,6 +29,13 @@
         .fade-enter-from, .fade-leave-to {
             opacity: 0;
         }
+        /* Estilo para o elemento temporário de cópia */
+        .copy-container {
+            position: absolute;
+            left: -9999px;
+            top: -9999px;
+            opacity: 0;
+        }
     </style>
 </head>
 <body>
@@ -38,7 +45,7 @@
                 <header class="text-center mb-8">
                     <div class="flex items-center justify-center gap-4 mb-4">
                         <img 
-                            src="images/bloom-dark.svg" 
+                            src="https://pub-336d12e9d48c4611a5ffba8c2e1f4bbb.r2.dev/images/bloom-dark.svg" 
                             alt="Logo Bloom" 
                             class="h-12 w-auto"
                         />
@@ -205,7 +212,7 @@
                         <div class="overflow-y-auto max-h-[60vh]">
                             <div v-for="client in emailClients" :key="client.id" v-show="activeTab === client.id">
                                 <div class="space-y-6">
-                                    <div v-for="(step, index) in client.steps" :key="index" class="">
+                                    <div v-for="(step, index) in client.steps" :key="index">
                                         <div class="flex gap-4 mb-3">
                                             <div class="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-semibold">
                                                 {{ index + 1 }}
@@ -239,6 +246,9 @@
                     Assinatura copiada com sucesso!
                 </div>
             </transition>
+
+            <!-- Container temporário para cópia -->
+            <div ref="copyContainer" class="copy-container"></div>
         </div>
     </div>
 
@@ -258,6 +268,7 @@
                 const showInstructions = ref(false);
                 const activeTab = ref('gmail');
                 const showToast = ref(false);
+                const copyContainer = ref(null);
 
                 // Configuração das empresas
                 const companies = ref([
@@ -304,7 +315,7 @@
                             { text: 'Clique em "Criar novo" se não tiver uma assinatura', image: null },
                             { text: 'Cole sua assinatura na área de edição', image: '' },
                             { text: 'Role para baixo e clique em "Salvar alterações"', image: null },
-                            { text: 'Escreva um novo e-mail e veja sua nova assinatura!', image: 'images/tutorials/gmail-webmail-2.jpg' }
+                            { text: 'Escreva um novo e-mail e veja sua nova assinatura!', image: 'https://pub-336d12e9d48c4611a5ffba8c2e1f4bbb.r2.dev/images/tutorials/gmail-webmail-2.jpg' }
                         ]
                     },
                     {
@@ -315,11 +326,11 @@
                             { text: 'Com o aplicativo de email aberto, clique em Mail e, em seguida, Preferências no canto superior esquerdo da tela.', image: null },
                             { text: 'Na janela de preferências, clique na aba Assinaturas.', image: null },
                             { text: 'Clique no botão "+" na coluna do meio', image: null },
-                            { text: 'Cole sua assinatura na área de edição à direita', image: 'images/tutorials/apple-mail-macos-1.jpg' },
+                            { text: 'Cole sua assinatura na área de edição à direita', image: 'https://pub-336d12e9d48c4611a5ffba8c2e1f4bbb.r2.dev/images/tutorials/apple-mail-macos-1.jpg' },
                             { text: 'Importante: certifique-se de que a opção "Sempre corresponder à fonte padrão da minha mensagem" esteja desmarcada, caso contrário, sua assinatura aparecerá em texto simples.', image: null },
                             { text: 'Nesta visualização, as imagens aparecerão em branco. Não se preocupe – assim que você for redigir um e-mail, as imagens aparecerão.', image: null },
                             { text: 'Feche a janela de preferências para salvar', image: null },
-                            { text: 'Importante: ainda está vendo uma versão em texto simples? Tente desmarcar a caixa de seleção "Colocar assinatura acima do texto citado" e colar sua assinatura novamente.', image: 'images/tutorials/apple-mail-macos-2.jpg' }
+                            { text: 'Importante: ainda está vendo uma versão em texto simples? Tente desmarcar a caixa de seleção "Colocar assinatura acima do texto citado" e colar sua assinatura novamente.', image: 'https://pub-336d12e9d48c4611a5ffba8c2e1f4bbb.r2.dev/images/tutorials/apple-mail-macos-2.jpg' }
                         ]
                     },
                     {
@@ -328,9 +339,9 @@
                         instructionImage: '',
                         steps: [
                             { text: 'Abra o Gerador de Assinaturas através do dispositivo iOS e copie a assinatura gerada', image: null },
-                            { text: 'Acesse o aplicativo Ajustes no seu dispositivo iOS, role a tela para baixo e selecione Mail, role a tela para baixo e selecione Assinatura', image: 'images/tutorials/apple-mail-ios-updated-1.jpg' },
-                            { text: 'Cole sua assinatura no editor de assinaturas (pressione e segure o editor para abrir a opção de colar).', image: 'images/tutorials/apple-mail-ios-updated-2.jpg' },
-                            { text: 'Acesse o aplicativo Mail, escreva um novo e-mail e veja sua nova assinatura!', image: 'images/tutorials/apple-mail-ios-updated-3.jpg' }
+                            { text: 'Acesse o aplicativo Ajustes no seu dispositivo iOS, role a tela para baixo e selecione Mail, role a tela para baixo e selecione Assinatura', image: 'https://pub-336d12e9d48c4611a5ffba8c2e1f4bbb.r2.dev/images/tutorials/apple-mail-ios-updated-1.jpg' },
+                            { text: 'Cole sua assinatura no editor de assinaturas (pressione e segure o editor para abrir a opção de colar).', image: 'https://pub-336d12e9d48c4611a5ffba8c2e1f4bbb.r2.dev/images/tutorials/apple-mail-ios-updated-2.jpg' },
+                            { text: 'Acesse o aplicativo Mail, escreva um novo e-mail e veja sua nova assinatura!', image: 'https://pub-336d12e9d48c4611a5ffba8c2e1f4bbb.r2.dev/images/tutorials/apple-mail-ios-updated-3.jpg' }
                         ]
                     },
                     {
@@ -542,81 +553,120 @@
                                                                         <p style="margin: 1px;">
                                                                             <a href="mailto:${email}" target="_blank" style="font-family: Arial, sans-serif; font-size: 13px; line-height: 17px; white-space: nowrap; color: rgb(136,136,136); text-decoration: none !important;">
                                                                                 <span style="font-family: Arial, sans-serif; font-size: 13px; line-height: 17px; white-space: nowrap; color: rgb(136,136,136); text-decoration: none !important;" class="${!formData.value.email ? 'placeholder-text' : ''}">
-                                                                    ${email}
-                                                                </span>
-                                                            </a>
-                                                        </p>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td valign="middle" style="padding: 1px 5px 1px 0px; vertical-align: middle;">
-                                                        <p style="margin: 1px;">
-                                                            <img src="${company.phoneIcon}" alt="" width="18" height="18" style="display: block; border: 0px; margin: 0px; width: 18px; height: 18px;">
-                                                        </p>
-                                                    </td>
-                                                    <td style="font-family: Arial, sans-serif; font-size: 13px; line-height: 17px; white-space: nowrap; color: rgb(136,136,135) !important; padding: 1px 0px; vertical-align: middle;">
-                                                        <p style="margin: 1px;">
-                                                            <a href="tel:${phone}" target="_blank" style="font-family: Arial, sans-serif; font-size: 13px; line-height: 17px; white-space: nowrap; color: rgb(136,136,136); text-decoration: none !important;">
-                                                                <span style="font-family: Arial, sans-serif; font-size: 13px; line-height: 17px; white-space: nowrap; color: rgb(136,136,136); text-decoration: none !important;" class="${!formData.value.phone ? 'placeholder-text' : ''}">
-                                                                    ${phone}
-                                                                </span>
-                                                            </a>
-                                                        </p>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td valign="middle" style="padding: 1px 5px 1px 0px; vertical-align: middle;">
-                                                        <p style="margin: 1px;">
-                                                            <img src="${company.websiteIcon}" alt="" width="18" height="18" style="display: block; border: 0px; margin: 0px; width: 18px; height: 18px;">
-                                                        </p>
-                                                    </td>
-                                                    <td style="font-family: Arial, sans-serif; font-size: 13px; line-height: 17px; white-space: nowrap; color: ${company.websiteColor} !important; font-weight: 700; padding: 1px 0px; vertical-align: middle;">
-                                                        <p style="margin: 1px;">
-                                                            <a href="${company.website}" target="_blank" style="font-family: Arial, sans-serif; font-size: 13px; line-height: 17px; white-space: nowrap; color: ${company.websiteColor}; font-weight: 700; text-decoration: none !important;">
-                                                                <span style="font-family: Arial, sans-serif; font-size: 13px; line-height: 17px; white-space: nowrap; color: ${company.websiteColor}; font-weight: 700; text-decoration: none !important;">
-                                                                    ${company.websiteDisplay}
-                                                                </span>
-                                                            </a>
-                                                        </p>
-                                                    </td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                    </tr>
-                                </table>
-                            </td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-        </table>
-    `;
-});
+                                                                                    ${email}
+                                                                                </span>
+                                                                            </a>
+                                                                        </p>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td valign="middle" style="padding: 1px 5px 1px 0px; vertical-align: middle;">
+                                                                        <p style="margin: 1px;">
+                                                                            <img src="${company.phoneIcon}" alt="" width="18" height="18" style="display: block; border: 0px; margin: 0px; width: 18px; height: 18px;">
+                                                                        </p>
+                                                                    </td>
+                                                                    <td style="font-family: Arial, sans-serif; font-size: 13px; line-height: 17px; white-space: nowrap; color: rgb(136,136,135) !important; padding: 1px 0px; vertical-align: middle;">
+                                                                        <p style="margin: 1px;">
+                                                                            <a href="tel:${phone}" target="_blank" style="font-family: Arial, sans-serif; font-size: 13px; line-height: 17px; white-space: nowrap; color: rgb(136,136,136); text-decoration: none !important;">
+                                                                                <span style="font-family: Arial, sans-serif; font-size: 13px; line-height: 17px; white-space: nowrap; color: rgb(136,136,136); text-decoration: none !important;" class="${!formData.value.phone ? 'placeholder-text' : ''}">
+                                                                                    ${phone}
+                                                                                </span>
+                                                                            </a>
+                                                                        </p>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td valign="middle" style="padding: 1px 5px 1px 0px; vertical-align: middle;">
+                                                                        <p style="margin: 1px;">
+                                                                            <img src="${company.websiteIcon}" alt="" width="18" height="18" style="display: block; border: 0px; margin: 0px; width: 18px; height: 18px;">
+                                                                        </p>
+                                                                    </td>
+                                                                    <td style="font-family: Arial, sans-serif; font-size: 13px; line-height: 17px; white-space: nowrap; color: ${company.websiteColor} !important; font-weight: 700; padding: 1px 0px; vertical-align: middle;">
+                                                                        <p style="margin: 1px;">
+                                                                            <a href="${company.website}" target="_blank" style="font-family: Arial, sans-serif; font-size: 13px; line-height: 17px; white-space: nowrap; color: ${company.websiteColor}; font-weight: 700; text-decoration: none !important;">
+                                                                                <span style="font-family: Arial, sans-serif; font-size: 13px; line-height: 17px; white-space: nowrap; color: ${company.websiteColor}; font-weight: 700; text-decoration: none !important;">
+                                                                                    ${company.websiteDisplay}
+                                                                                </span>
+                                                                            </a>
+                                                                        </p>
+                                                                    </td>
+                                                                </tr>
+                                                            </table>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    `;
+                });
 
                 // Métodos
                 const copySignature = async () => {
                     if (!isFormValid.value) return;
                     
                     try {
-                        await navigator.clipboard.writeText(generatedSignature.value);
+                        // Criar um elemento temporário com o HTML renderizado
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = generatedSignature.value;
+                        tempDiv.style.position = 'absolute';
+                        tempDiv.style.left = '-9999px';
+                        tempDiv.style.top = '-9999px';
+                        document.body.appendChild(tempDiv);
+
+                        // Selecionar o conteúdo
+                        const range = document.createRange();
+                        range.selectNodeContents(tempDiv);
+                        const selection = window.getSelection();
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+
+                        // Tentar usar a API moderna primeiro
+                        if (navigator.clipboard && window.ClipboardItem) {
+                            try {
+                                // Criar um blob com o HTML
+                                const htmlBlob = new Blob([generatedSignature.value], { type: 'text/html' });
+                                const textBlob = new Blob([tempDiv.innerText], { type: 'text/plain' });
+                                
+                                const clipboardItem = new ClipboardItem({
+                                    'text/html': htmlBlob,
+                                    'text/plain': textBlob
+                                });
+                                
+                                await navigator.clipboard.write([clipboardItem]);
+                            } catch (clipboardError) {
+                                // Fallback para execCommand se a API moderna falhar
+                                document.execCommand('copy');
+                            }
+                        } else {
+                            // Fallback para navegadores mais antigos
+                            document.execCommand('copy');
+                        }
+
+                        // Limpar
+                        selection.removeAllRanges();
+                        document.body.removeChild(tempDiv);
+
                         showToast.value = true;
                         setTimeout(() => {
                             showToast.value = false;
                         }, 3000);
                     } catch (err) {
                         console.error('Erro ao copiar:', err);
-                        // Fallback para navegadores mais antigos
-                        const textArea = document.createElement('textarea');
-                        textArea.value = generatedSignature.value;
-                        document.body.appendChild(textArea);
-                        textArea.select();
-                        document.execCommand('copy');
-                        document.body.removeChild(textArea);
                         
-                        showToast.value = true;
-                        setTimeout(() => {
-                            showToast.value = false;
-                        }, 3000);
+                        // Último fallback - copiar como texto simples
+                        try {
+                            await navigator.clipboard.writeText(generatedSignature.value);
+                            showToast.value = true;
+                            setTimeout(() => {
+                                showToast.value = false;
+                            }, 3000);
+                        } catch (textError) {
+                            alert('Erro ao copiar a assinatura. Tente novamente.');
+                        }
                     }
                 };
 
@@ -649,7 +699,8 @@
                     isFormValid,
                     generatedSignature,
                     generatedSignatureWithPlaceholders,
-                    copySignature
+                    copySignature,
+                    copyContainer
                 };
             }
         }).mount('#app');
